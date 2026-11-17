@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAI VIRAL AI v2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090d18;color:#eef2ff;font:15px system-ui}main{max-width:850px;margin:auto;padding:24px}
+.card{background:#121a2b;border:1px solid #26334c;border-radius:18px;padding:20px;margin:16px 0}
+h1{font-size:34px;margin:4px 0}p,.muted{color:#9eacc5}.tag{color:#8ef0c1;font-size:12px;letter-spacing:2px}
+input,button{width:100%;padding:14px;border-radius:10px;margin:8px 0;border:1px solid #35445f;background:#0c1424;color:white}
+button{background:#7357ff;border:0;font-weight:700;cursor:pointer}button:disabled{opacity:.5}
+label{display:block;margin-top:12px}.result{padding:14px;border:1px solid #34425b;border-radius:12px;margin:12px 0}
+a{color:#9e91ff}small{color:#aab7cc}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}
+</style></head><body><main>
+<div class="tag">AUTOMATED SHORT-FORM VIDEO STUDIO</div><h1>KAI VIRAL AI <span style="color:#8ef0c1">v2.0</span></h1>
+<p>Paste a YouTube link for metadata, then upload an authorized video file to generate vertical Shorts.</p>
+<div class="card"><h2>1. YouTube link</h2><input id="url" placeholder="https://youtu.be/..."><button onclick="inspect()">Inspect URL</button><div id="meta" class="muted"></div></div>
+<div class="card"><h2>2. Generate Shorts</h2>
+<p class="muted">Upload a video file you own or have permission to edit. English Whisper captions are generated automatically.</p>
+<label>Video file<input id="video" type="file" accept="video/*"></label>
+<label>Number of Shorts (1–10)<input id="count" type="number" min="1" max="10" value="3"></label>
+<button id="go" onclick="generate()">Generate Shorts</button><div id="status" class="muted"></div><div id="results"></div></div>
+<div class="card"><h3>Included</h3><p>Whisper English CC · scene/speech-based clip ranking · hook suggestions · ending CTA · face-aware vertical crop · MP4 export.</p>
+<small>Free local software. First run downloads the Whisper model. Processing speed depends on your device. No automatic YouTube downloading.</small></div>
+</main><script>
+async function inspect(){let u=document.getElementById('url').value,fd=new FormData();fd.append('url',u);let m=document.getElementById('meta');m.textContent='Checking...';try{let r=await fetch('/inspect-url',{method:'POST',body:fd}),d=await r.json();m.textContent=(d.title?d.title+' — '+d.author+'. ':'')+(d.message||d.detail||'');}catch(e){m.textContent='Could not inspect URL.'}}
+async function generate(){let f=document.getElementById('video').files[0];if(!f){alert('Choose an authorized video file first.');return}
+let fd=new FormData();fd.append('file',f);fd.append('shorts_count',document.getElementById('count').value);
+let b=document.getElementById('go'),s=document.getElementById('status'),out=document.getElementById('results');b.disabled=true;s.textContent='Processing video, transcribing English speech and rendering clips...';out.innerHTML='';
+try{let r=await fetch('/generate',{method:'POST',body:fd}),d=await r.json();if(!r.ok)throw Error(d.detail||'Generation failed');s.textContent='Finished! Review each clip before publishing.';
+d.shorts.forEach((x,i)=>{let el=document.createElement('div');el.className='result';el.innerHTML=`<b>Short ${i+1}</b><p>${x.start}s – ${x.end}s</p><p><b>Hook:</b> ${x.hook}</p><p><b>Ending:</b> ${x.ending}</p><a href="${x.file}" download>Download MP4</a>`;out.appendChild(el)})}catch(e){s.textContent='Error: '+e.message}finally{b.disabled=false}}
+</script></body></html>
